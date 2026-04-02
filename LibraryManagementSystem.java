@@ -1,62 +1,48 @@
 import java.util.*;
 
-// 1) Book class
-class Book {
-    private int bookId;
-    private String title;
-    private String author;
-    private boolean availability;
+/**
+ * Library Management System - Java OOP + Collections
+ */
+public class LibraryManagementSystem {
 
-    public Book(int bookId, String title, String author) {
-        this.bookId = bookId;
-        this.title = title;
-        this.author = author;
-        this.availability = true; // available by default
-    }
+    public static void main(String[] args) {
+        Library library = new Library();
 
-    // Getters and Setters (Encapsulation)
-    public int getBookId() {
-        return bookId;
-    }
+        // Members
+        Member member = new Member(101, "Rahul");
+        StudentMember student = new StudentMember(102, "Ayush");
 
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
+        // Add books
+        library.addBook(new Book(1, "Java Basics", "James Gosling"));
+        library.addBook(new Book(2, "OOP Concepts", "Bjarne Stroustrup"));
+        library.addBook(new Book(3, "Data Structures", "Mark Allen"));
 
-    public String getTitle() {
-        return title;
-    }
+        // Display books
+        library.displayAllBooks();
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+        // Issue books
+        library.issueBook(member.getMemberId(), 1);
+        library.issueBook(student.getMemberId(), 2);
 
-    public String getAuthor() {
-        return author;
-    }
+        // Display books after issue
+        library.displayAllBooks();
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+        // Return a book
+        library.returnBook(member.getMemberId(), 1);
 
-    public boolean isAvailability() {
-        return availability;
-    }
+        // Display books after return
+        library.displayAllBooks();
 
-    public void setAvailability(boolean availability) {
-        this.availability = availability;
-    }
+        // Search (polymorphism via method overloading)
+        library.searchBook("Java Basics");
+        library.searchBook("Mark Allen", true); // search by author
 
-    @Override
-    public String toString() {
-        return "Book ID: " + bookId +
-               ", Title: " + title +
-               ", Author: " + author +
-               ", Available: " + availability;
+        // Polymorphism via overriding
+        System.out.println("\nFine for Member (5 late days): " + member.calculateFine(5));
+        System.out.println("Fine for StudentMember (5 late days): " + student.calculateFine(5));
     }
 }
 
-// 1) Member class
 class Member {
     private int memberId;
     private String name;
@@ -66,7 +52,6 @@ class Member {
         this.name = name;
     }
 
-    // Getters and Setters (Encapsulation)
     public int getMemberId() {
         return memberId;
     }
@@ -83,30 +68,26 @@ class Member {
         this.name = name;
     }
 
-    // Polymorphism (method to be overridden)
     public double calculateFine(int lateDays) {
-        return lateDays * 5.0; // default fine
+        return lateDays * 5.0;
     }
 }
 
-// 4) Inheritance: StudentMember extends Member
 class StudentMember extends Member {
     public StudentMember(int memberId, String name) {
         super(memberId, name);
     }
 
-    // 4) Polymorphism (overriding)
     @Override
     public double calculateFine(int lateDays) {
-        return lateDays * 2.0; // lower fine for students
+        return lateDays * 2.0;
     }
 }
 
-// 3) Library class
 class Library {
-    // 2) Collections
-    private ArrayList<Book> books; // store all books
-    private HashMap<Integer, List<Book>> issuedBooks; // memberId -> list of books issued
+    // Collections Framework usage
+    private final ArrayList<Book> books;
+    private final HashMap<Integer, List<Book>> issuedBooks;
 
     public Library() {
         books = new ArrayList<>();
@@ -126,51 +107,45 @@ class Library {
             System.out.println("No books in library.");
             return;
         }
-        for (Book b : books) {
-            System.out.println(b);
+
+        for (Book book : books) {
+            System.out.println(book);
         }
     }
 
     // Issue a book to a member
     public void issueBook(int memberId, int bookId) {
-        Book bookToIssue = null;
-        for (Book b : books) {
-            if (b.getBookId() == bookId) {
-                bookToIssue = b;
-                break;
-            }
-        }
+        Book bookToIssue = findBookById(bookId);
 
         if (bookToIssue == null) {
             System.out.println("Book not found.");
             return;
         }
 
-        if (!bookToIssue.isAvailability()) {
+        if (!bookToIssue.isAvailable()) {
             System.out.println("Book is already issued.");
             return;
         }
 
-        bookToIssue.setAvailability(false);
+        bookToIssue.setAvailable(false);
         issuedBooks.putIfAbsent(memberId, new ArrayList<>());
         issuedBooks.get(memberId).add(bookToIssue);
-
         System.out.println("Book issued successfully to Member ID: " + memberId);
     }
 
     // Return a book
     public void returnBook(int memberId, int bookId) {
-        List<Book> memberBooks = issuedBooks.get(memberId);
+        List<Book> memberIssuedBooks = issuedBooks.get(memberId);
 
-        if (memberBooks == null || memberBooks.isEmpty()) {
+        if (memberIssuedBooks == null || memberIssuedBooks.isEmpty()) {
             System.out.println("No books issued to this member.");
             return;
         }
 
         Book returnBook = null;
-        for (Book b : memberBooks) {
-            if (b.getBookId() == bookId) {
-                returnBook = b;
+        for (Book book : memberIssuedBooks) {
+            if (book.getBookId() == bookId) {
+                returnBook = book;
                 break;
             }
         }
@@ -180,78 +155,56 @@ class Library {
             return;
         }
 
-        returnBook.setAvailability(true);
-        memberBooks.remove(returnBook);
+        returnBook.setAvailable(true);
+        memberIssuedBooks.remove(returnBook);
         System.out.println("Book returned successfully.");
     }
 
-    // Search for a book by title (Polymorphism: overloading)
+    // Search for a book by title
     public void searchBook(String title) {
         System.out.println("\nSearch by Title: " + title);
         boolean found = false;
-        for (Book b : books) {
-            if (b.getTitle().equalsIgnoreCase(title)) {
-                System.out.println(b);
+
+        for (Book book : books) {
+            if (book.getTitle().equalsIgnoreCase(title)) {
+                System.out.println(book);
                 found = true;
             }
         }
+
         if (!found) {
             System.out.println("No matching book found.");
         }
     }
 
-    // Search for a book by author
-    public void searchBookByAuthor(String author) {
+    // Polymorphism via method overloading: search by author
+    public void searchBook(String author, boolean byAuthor) {
+        if (!byAuthor) {
+            searchBook(author);
+            return;
+        }
+
         System.out.println("\nSearch by Author: " + author);
         boolean found = false;
-        for (Book b : books) {
-            if (b.getAuthor().equalsIgnoreCase(author)) {
-                System.out.println(b);
+
+        for (Book book : books) {
+            if (book.getAuthor().equalsIgnoreCase(author)) {
+                System.out.println(book);
                 found = true;
             }
         }
+
         if (!found) {
             System.out.println("No matching book found.");
         }
     }
-}
 
-// Main class
-public class LibraryManagementSystem {
-    public static void main(String[] args) {
-        Library library = new Library();
-
-        // Members
-        Member m1 = new Member(101, "Rahul");
-        StudentMember s1 = new StudentMember(102, "Ayush");
-
-        // Add books
-        library.addBook(new Book(1, "Java Basics", "James Gosling"));
-        library.addBook(new Book(2, "OOP Concepts", "Bjarne Stroustrup"));
-        library.addBook(new Book(3, "Data Structures", "Mark Allen"));
-
-        // Display books
-        library.displayAllBooks();
-
-        // Issue book
-        library.issueBook(m1.getMemberId(), 1);
-        library.issueBook(s1.getMemberId(), 2);
-
-        // Display after issue
-        library.displayAllBooks();
-
-        // Return book
-        library.returnBook(m1.getMemberId(), 1);
-
-        // Display after return
-        library.displayAllBooks();
-
-        // Search
-        library.searchBook("Java Basics");
-        library.searchBookByAuthor("Mark Allen");
-
-        // Polymorphism demonstration (overriding)
-        System.out.println("\nFine for Member (5 late days): " + m1.calculateFine(5));
-        System.out.println("Fine for StudentMember (5 late days): " + s1.calculateFine(5));
+    private Book findBookById(int bookId) {
+        for (Book book : books) {
+            if (book.getBookId() == bookId) {
+                return book;
+            }
+        }
+        return null;
     }
 }
