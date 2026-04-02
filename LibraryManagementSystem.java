@@ -1,61 +1,5 @@
 import java.util.*;
 
-// 1) Book class
-class Book {
-    private int bookId;
-    private String title;
-    private String author;
-    private boolean availability;
-
-    public Book(int bookId, String title, String author) {
-        this.bookId = bookId;
-        this.title = title;
-        this.author = author;
-        this.availability = true; // available by default
-    }
-
-    // Getters and Setters (Encapsulation)
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public boolean isAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(boolean availability) {
-        this.availability = availability;
-    }
-
-    @Override
-    public String toString() {
-        return "Book ID: " + bookId +
-               ", Title: " + title +
-               ", Author: " + author +
-               ", Available: " + availability;
-    }
-}
-
 // 1) Member class
 class Member {
     private int memberId;
@@ -146,12 +90,12 @@ class Library {
             return;
         }
 
-        if (!bookToIssue.isAvailability()) {
+        if (!bookToIssue.isAvailable()) {
             System.out.println("Book is already issued.");
             return;
         }
 
-        bookToIssue.setAvailability(false);
+        bookToIssue.setAvailable(false);
         issuedBooks.putIfAbsent(memberId, new ArrayList<>());
         issuedBooks.get(memberId).add(bookToIssue);
 
@@ -180,7 +124,7 @@ class Library {
             return;
         }
 
-        returnBook.setAvailability(true);
+        returnBook.setAvailable(true);
         memberBooks.remove(returnBook);
         System.out.println("Book returned successfully.");
     }
